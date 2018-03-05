@@ -22,7 +22,7 @@ struct flash :
         else
             ::InvalidateRect(hwnd, pRect, fErase);
     }
-    virtual bool Callback(const wchar_t func[], const VARIANT* argv,  VARIANT& retva){ return false; }
+    virtual bool Callback(const wchar_t func[], const _variant_t* argv, _variant_t& retval){ return false; }
     OleBox* swf;
     HWND hwnd;
     bool focus_got;

@@ -1,5 +1,4 @@
 LIBRARY olebox.dll
-DESCRIPTION olebox
 EXPORTS
 OleBox_ShockwaveFlash
 OleBox_WebBrowser

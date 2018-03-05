@@ -552,10 +552,9 @@ struct __WebBoxImpl__ : public WebBrowser, public OleBox
     {
         return false;
     }
-    virtual bool Invoke(const wchar_t func[], const VARIANT* argv,  VARIANT& ret) 
+    virtual bool Invoke(const wchar_t func[], const _variant_t* argv,  _variant_t& retval) 
     { 
         HRESULT hr;
-        _variant_t retval(ret, false);
         const std::wstring cmd(func);
         if (cmd == L"navigate"){
             std::wstring path;

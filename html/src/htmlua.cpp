@@ -1,9 +1,9 @@
-#include <Ole2.h>
 #include "htmlua.h"
 #include "behavior_lua.h"
 #include <map>
 #include <set>
 #include <process.h>
+#pragma comment(lib, "comsupp.lib")
 namespace{
 struct ThreadParam
 {

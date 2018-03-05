@@ -1,5 +1,5 @@
 #pragma once
-#include <Ole2.h>
+#include <comutil.h>
 struct OleBox {
     virtual ~OleBox(){}
     struct Stub {
@@ -9,7 +9,7 @@ struct OleBox {
         virtual void Invalidate(HRGN hRGN, const RECT* pRect, bool fErase) = 0;
 
         //调用外部函数
-        virtual bool Callback(const wchar_t func[], const VARIANT* argv,  VARIANT& retva)=0;
+        virtual bool Callback(const wchar_t func[], const _variant_t* argv,  _variant_t& retva)=0;
     };
 
     ///销毁函数
@@ -25,56 +25,21 @@ struct OleBox {
     virtual void Resize(const RECT& rc) = 0;
 
     ///调用内部函数
-    virtual bool Invoke(const wchar_t func[], const VARIANT* argv,  VARIANT& retval) = 0;
-   
-    bool Invoke(const wchar_t func[], bool* retval = 0) {
-        VARIANT ret={0};
-        if (!Invoke(func, 0, ret)) return false;
-        bool r = (ret.vt == VT_BOOL ? ret.boolVal != 0 : false);
-        if (!retval) return r;
-        *retval = r;
-        return true;
-    }
-    bool Invoke(const wchar_t func[], int argval, bool* retval = 0) {
-        VARIANT ret={0};
-        VARIANT arg;
-        arg.vt = VT_INT;
-        arg.iVal = argval;
+    virtual bool Invoke(const wchar_t func[], const _variant_t* argv,  _variant_t& retval) = 0;
+
+    template <typename T>
+    bool Invoke(const wchar_t func[], const T& argval) {
+        _variant_t ret;
+        _variant_t arg(argval);
         if (!Invoke(func, &arg, ret)) return false;
-        bool r = (ret.vt == VT_BOOL ? ret.boolVal != 0 : false);
-        if (!retval) return r;
-        *retval = r;
-        return true;
+        return ret;
     }
-    bool Invoke(const wchar_t func[], bool argval, bool* retval = 0) {
-        VARIANT ret={0};
-        VARIANT arg;
-        arg.vt = VT_BOOL;
-        arg.boolVal = argval;
+    template <typename T>
+    bool Invoke(const wchar_t func[], const T& argval, _bstr_t& retval) {
+        _variant_t ret;
+        _variant_t arg(argval);
         if (!Invoke(func, &arg, ret)) return false;
-        bool r = (ret.vt == VT_BOOL ? ret.boolVal != 0 : false);
-        if (!retval) return r;
-        *retval = r;
-        return true;
-    }
-    bool Invoke(const wchar_t func[], const wchar_t* argval, bool* retval = 0) {
-        VARIANT ret={0};
-        VARIANT arg;
-        arg.vt = VT_BSTR;
-        arg.bstrVal = (wchar_t*)argval;
-        if (!Invoke(func, &arg, ret)) return false;
-        bool r = (ret.vt == VT_BOOL ? ret.boolVal != 0 : false);
-        if (!retval) return r;
-        *retval = r;
-        return true;
-    }
-    bool Invoke(const wchar_t func[], const wchar_t* argval, BSTR& retval) {
-        VARIANT ret={0};
-        VARIANT arg;
-        arg.vt = VT_BSTR;
-        arg.bstrVal = (wchar_t*)argval;
-        if (!Invoke(func, &arg, ret)) return false;
-        retval = (ret.vt == VT_BSTR ? ret.bstrVal : 0);
+        retval = ret;
         return true;
     }
 };

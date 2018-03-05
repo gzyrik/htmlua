@@ -289,9 +289,8 @@ public:
     {
         return SUCCEEDED(m_windowless->OnWindowMessage(msg, wParam, lParam, result));
     }
-    virtual bool Invoke(const wchar_t func[], const VARIANT* argv,  VARIANT& ret)
+    virtual bool Invoke(const wchar_t func[], const _variant_t* argv,  _variant_t& retval)
     {
-        _variant_t retval(ret, false);
         const std::wstring cmd(func);
         if (cmd == L"play")
             retval = SUCCEEDED(m_swf->Play());
@@ -309,22 +308,24 @@ public:
                     m_swf->SAlign = argv->bstrVal;
                 else
                     return false;
+                retval = true;
             }
-            retval = (wchar_t*)m_swf->SAlign;
+            else
+                retval = (wchar_t*)m_swf->SAlign;
         }
         else if (cmd == L"loop") {
             if (argv) {
                 if (argv->vt != VT_BOOL) return false;
                 m_swf->Loop = argv->boolVal;
             }
-            retval = m_swf->Loop != 0;
+            retval = (m_swf->Loop != 0);
         }
         else if (cmd == L"menu") {
             if (argv) {
                 if (argv->vt != VT_BOOL) return false;
                 m_swf->Menu = argv->boolVal;
             }
-            retval = m_swf->Menu != 0;
+            retval = (m_swf->Menu != 0);
         }
         else if (cmd == L"movie") {
             if (argv) {
@@ -332,8 +333,10 @@ public:
                 std::wstring file(argv->bstrVal);
                 if (file.find(L"://") == file.npos) file = m_cwd + file;
                 m_swf->Movie = file.c_str();
+                retval = true;
             }
-            retval = (wchar_t*)m_swf->Movie;
+            else
+                retval = (wchar_t*)m_swf->Movie;
         }
         else if (cmd == L"quality") {
             if (argv) {
@@ -343,8 +346,10 @@ public:
                     m_swf->Quality2 = argv->bstrVal;
                 else
                     return false;
+                retval = true;
             }
-            retval = (wchar_t*)m_swf->Quality2;
+            else
+                retval = (wchar_t*)m_swf->Quality2;
         }
         else if (cmd == L"scale") {
             if (argv) {
@@ -354,8 +359,10 @@ public:
                     m_swf->Scale = argv->bstrVal;
                 else
                     return false;
+                retval = true;
             }
-            retval = (wchar_t*)m_swf->Scale;
+            else
+                retval = (wchar_t*)m_swf->Scale;
         }
         else {
             std::wostringstream oss; {
@@ -372,12 +379,10 @@ public:
                 }
                 oss<<"</arguments></invoke>";
             }
-            BSTR result = 0;
-            HRESULT hr = m_swf->raw_CallFunction(_bstr_t(oss.str().c_str()), &result);
-            if (FAILED(hr)) {
-                SysFreeString(result);
-                return false;
-            }
+            BSTR bs = 0;
+            HRESULT hr = m_swf->raw_CallFunction(_bstr_t(oss.str().c_str()), &bs);
+            _bstr_t result(bs, false);
+            if (FAILED(hr)) return false;
             const wchar_t* str = result;
             if (wcscmp(str, L"<true/>") == 0)
                 retval = true;
@@ -391,7 +396,6 @@ public:
                 const wchar_t* end = wcsstr(str, L"</number>");
                 retval = _wtof(str+8);
             }
-            SysFreeString(result);
         }
         return true;
     }
