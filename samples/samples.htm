@@ -1,0 +1,40 @@
+<html icon="images/main.ico">
+  <head>
+     <META http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+     <!-- 定义程序标题 -->
+     <title>htmlayout 界面范例浏览器</title>
+
+     <!-- 定义程序图标 -->
+     <link rel="icon" type="image/x-icon" href="images/main.ico" /> 
+
+     <style type="text/css" src="samples.css"/>
+     <script type="text/lua" src="samples.lua"/>
+  </head>
+  <body>
+     <frameset cols="240px,*">
+      <div #side style="flow:block;height:100%%;width:180;padding:0;">
+      <div #r-sidebar>
+         <caption checked title="Ctrl-A">官方示例</caption>
+           <div #samples></div>
+         <caption title="Ctrl-B">在线资料</caption>
+           <div #onlines></div>
+         <caption title="Ctrl-C">Scintilla示例</caption>
+           <div #scintillas></div>
+         <caption title="Ctrl-D">Flash示例</caption>
+           <div #flashes></div>
+         <caption title="Ctrl-D">测试示例</caption>
+           <div #tests></div>
+       </div>
+       </div>
+       </div>
+       <div class="tabs">
+         <div .strip role="page-tab-list"> <!-- our tab strip, can be placed on any side of tab container. -->
+           <div panel="panel1" role="page-tab" selected>效果预览</div>
+           <div panel="panel2" role="page-tab">编辑源码</div>
+         </div>
+         <widget name="panel1" #prview type="HtmlView"/>
+         <widget name="panel2" #editor type="Scintilla"/>
+       <div>
+     </frameset>
+  </body>
+</html>

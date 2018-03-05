@@ -1,0 +1,180 @@
+<html>
+  <head>
+    <META http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>类似MFC中工具条界面</title>
+    <title></title>
+    <style>
+      @image-map tb-icon 
+      {
+        src:url(rttb.png);/* 表明所使用的图片，一般为了美观，png要做成透明背景的 */
+        cells:15 2; /* 表明图块单元共多少行多少列. 15 columns, 2 rows */
+        /* 图块单元的逻辑名字. logical names of the parts, see toolbar-icons.png */ 
+        items: /* 第一行 */
+                ulist,
+                olist,
+                unindent,
+                indent,
+                picture,
+                table,
+                link,
+                align-left,
+                align-center,
+                align-right,
+                align-justify,
+                align,
+                fullscreen,
+                unfullscreen,
+                props,
+                /* 第二行 */
+                bold,
+                italic,
+                underline,
+                strikethrough,
+                font-family,
+                font-size,
+                text-color,
+                text-back-color,
+                source;
+      }
+    
+      toolbar { 
+        display:block; /* 显示当前块，一般不需要设置，默认的就是这个 */
+        display-model:block-inside; 
+        flow:horizontal; /* 水平放置其内部块，这个很重要，是HTMLayout专用的*/
+        border-spacing:2px; 
+        padding:0;
+        border-left: 1px solid #F4F4F4;
+        border-bottom: 1px solid #BBB;
+        background-color: #F1F1F1 #F1F1F1 #DADADA #DADADA;
+      }
+      toolbar > widget.button { 
+        behavior:clickable;
+        size:21px; 
+        padding:0;
+        foreground:no-repeat 50% 50%; padding:3px; 
+        foreground-repeat:no-repeat;
+        background-image:none; 
+        background-repeat:stretch; 
+        hit-margin: 2px;
+        margin: 2px;
+        transition:none;
+      }
+      
+      toolbar > widget.button:rtl {
+        mapping: left-to-right(margin,foreground-image); 
+      }
+      
+      toolbar > widget.button:hover { 
+        background-image:url(theme:toolbar-button-hover); 
+        /* 图片的前景颜色，通过colorize(xx)可以改变图片的显示颜色（透明的前景色）
+           目前可用的图像变换有如下几种:
+         *ground-image-transformation: opacity(0.5)
+            设置图像透明度，参数为大于0小于1的小数．1.0 为不透明，0.0 为完全透明
+
+         *ground-image-transformation: flip-y()
+            图像上下翻转. flip-x()图像左右翻转
+
+         *ground-image-transformation: colorize(#FFCC00)
+            颜色滤镜效果，常用于实现按钮图标的禁用状态
+
+         *ground-image-transformation: contrast-brightness-gamma(对比度[0.0,1.0], 亮度[0.0,1.0], gamma值)
+            对比度,亮度,gamma值调整. 对比度和亮度的中间值为 0.5. 可用于鼠标悬停死的按钮图标变化.
+
+         *ground-image-transformation: color-schema(red,yellow,blue)
+            将图像的灰度色部分按给出的颜色(可以有多个)进行插值变换
+         */
+        foreground-image-transformation: colorize(#70F);
+      }
+      toolbar > widget.button:active { 
+        background-image:url(theme:toolbar-button-pressed); 
+        foreground-position:57% 57%; 
+      }
+      toolbar > widget.button:disabled { 
+        background-image:none; 
+        opacity:0.5;
+      }
+      toolbar > splitter {
+        width:0;
+        height:*;
+        border-left: 1px solid #BBB;
+        border-right: 1px solid #F4F4F4;
+      }
+      
+      /* HTML中的".bold"对应的widget和@image-map中的图块单元对应起来
+         {}中的bold就是在 items 中指定的名称
+       */
+      toolbar > widget.button.bold { foreground-image:image-map(tb-icon,bold); } 
+      toolbar > widget.button.italic { foreground-image:image-map(tb-icon,italic); } 
+      toolbar > widget.button.underline { foreground-image:image-map(tb-icon,underline); } 
+      toolbar > widget.button.strikethrough { foreground-image:image-map(tb-icon,strikethrough); } 
+     
+      toolbar > widget.button.font-family { foreground-image:image-map(tb-icon,font-family); } 
+      toolbar > widget.button.font-size { foreground-image:image-map(tb-icon,font-size); } 
+      toolbar > widget.button.text-color { foreground-image:image-map(tb-icon,text-color); }       
+      toolbar > widget.button.text-back-color { foreground-image:image-map(tb-icon,text-back-color); } 
+      
+      toolbar > widget.button.ulist { foreground-image:image-map(tb-icon,ulist); } 
+      toolbar > widget.button.olist { foreground-image:image-map(tb-icon,olist); } 
+      toolbar > widget.button.unindent { foreground-image:image-map(tb-icon,unindent); } 
+      toolbar > widget.button.indent { foreground-image:image-map(tb-icon,indent); } 
+      toolbar > widget.button.align { foreground-image:image-map(tb-icon,align); } 
+      
+      toolbar > widget.button.picture { foreground-image:image-map(tb-icon,picture); } 
+      toolbar > widget.button.table { foreground-image:image-map(tb-icon,table); } 
+      toolbar > widget.button.link { foreground-image:image-map(tb-icon,link); } 
+      
+      toolbar > widget.button.fullscreen { foreground-image:image-map(tb-icon,fullscreen); margin-left:*; } 
+      toolbar > widget.button.fullscreen:checked { foreground-image:image-map(tb-icon,unfullscreen); } 
+      
+      .editor { size:*; border: 1px solid #BBB; }
+      .editor > richtext { size:*; background:window; padding:0 }
+    
+    </style>
+    <script type="text/tiscript">
+    
+      $(#dirswitch).onValueChanged = :: $(div.editor).attributes["dir"] = this.value.dir;
+    
+    </script>
+  </head>
+<body>
+  <p>Demo of @image-map usage. Single rttb.png image is used as a source of different images (toolbar buttons here).</p>
+  <form #dirswitch>
+    Change UI directionality:
+    <button type=radio value=ltr name="dir">LTR</button>
+    <button type=radio value=rtl name="dir">RTL</button>
+  </form>
+  <div .editor>
+  <toolbar>
+    <widget .button .bold />
+    <widget .button .italic />
+    <widget .button .underline />
+    <widget .button .strikethrough />
+    <splitter/>
+    <widget .button .font-family />
+    <widget .button .font-size />
+    <widget .button .text-color />
+    <widget .button .text-back-color />
+    <splitter/>
+    <widget .button .ulist />
+    <widget .button .olist />
+    <widget .button .unindent />
+    <widget .button .indent />
+    <splitter/>
+    <widget .button .align />
+    <splitter/>
+    <widget .button .picture />
+    <widget .button .table />
+    <widget .button .link />
+    
+    <widget .button .fullscreen />
+  </toolbar>
+  <div>
+    Note that while in RTL mode icons are also mirrored due to this declaration:
+    <pre dir=ltr>toolbar > button:rtl {
+  mapping: left-to-right(margin,foreground-image); 
+}</pre>
+  In reality not all icons shall be mirrored that way.
+  </div>
+  </div>
+</body>
+</html>

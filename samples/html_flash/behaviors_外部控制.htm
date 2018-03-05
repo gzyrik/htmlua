@@ -1,0 +1,58 @@
+<html>
+    <head>
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <title></title>
+        <style>
+div.flash 
+{
+    width:*;
+    height:*;
+    background-image:url(back.png);
+    background-repeat:expand;
+    background-position:11px 11px 11px 11px;
+    border:1px solid silver;
+    -movie:url(test.swf);
+    behavior: flash;
+}
+button#play { click!: $1(div.flash).play(); }
+
+button#stop { click!: $1(div.flash).stop(); }
+button#back { click!: $1(div.flash).back(); }
+button#forward { click!: $1(div.flash).forward(); }
+button#loop { click!: $1(div.flash).loop(self:value); }
+button#menu { click!: $1(div.flash).menu(self:value); }
+input#quality 
+{ 
+    value-changed!: swf = $1(div.flash), $1(#quality_str):value=swf.quality(self:value);
+}
+input#scale 
+{ 
+    value-changed!: swf = $1(div.flash), $1(#scale_str):value=swf.scale(self:value);
+}
+input#align
+{ 
+    value-changed!: swf = $1(div.flash), $1(#align_str):value=swf.align(self:value);
+}
+select { value-changed!:  $1(div.flash).movie(self:value); }
+
+        </style>
+    </head>
+    <body>
+
+        <h1>Sample of behavior flash</h1>
+        影片:
+        <select name='movie'>
+			<OPTION selected>test.swf</OPTION>
+            <OPTION >scene.swf</OPTION>
+            <OPTION >controls.swf</OPTION>
+		</select>
+        <button #play>Play</button> <button #stop>Stop</button> <button #back>Back</button> <button #forward>Forward</button>
+        <button #loop type="checkbox">Loop</button> <button #menu type="checkbox" checked>Menu</button>
+        <div>
+            质量等级: <b id="quality"/><input type="hslider" #quality value=1 max=3 min=0 buddy="quality" /> <b #quality_str>High</b><br>
+            伸缩方式: <b id="scale"/><input type="hslider" #scale value=3 max=3 min=0 buddy="scale" /> <b #scale_str>NoScale</b><br>
+            对齐方式: <b id="align"/><input type="hslider" #align value=0 max=15 min=0 buddy="align" /> <b #align_str/>
+        </div>
+        <div class="flash"/>
+    </body>
+</html>

@@ -1,0 +1,22 @@
+<html>
+    <head>
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <style>
+div  { flow:h-flow;border:1px dashed #7f0000; }
+        </style>
+        <script type="text/lua">
+E'.btn1'.attribute.onClick = function()
+    E'div':insert('button', "Hello world!")
+end
+E'.btn2'.attribute.onClick = function(self)
+    E'div':clone(self, 1)
+end
+        </script>
+    </head>
+    <body>
+        <button class="btn1">插入button元素</button>
+        <button class="btn2">克隆button元素</button>
+        <div/>
+        <div/>
+    </body>
+</html>

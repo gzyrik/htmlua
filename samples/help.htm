@@ -1,0 +1,53 @@
+<html>
+   <head>
+      <META http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+      <title>函数帮助编辑器</title>
+      <link rel="icon" type="image/x-icon" href="images/main.ico" />
+      <link rel="stylesheet" type="text/css" href="help.css" />
+      <script type="text/lua" src="help.lua">
+local def=document:query('#def')
+local helptxt=document:query('#helptxt')
+local function clearHelp()
+    def.value = ''
+    helptxt.value = ''
+end
+e = def --全局变量
+function e:onDropFiles(...)
+    print(...)
+end
+function onChanged(self)
+    local name = self.value
+    local f,msg = loadstring('return '..name, 'funchelp')
+    if not f then return clearHelp() end
+    f = setfenv(f, window)
+
+    local desc = _HELP(f());
+    if not desc then return clearHelp() end
+
+    --抽取形参
+    local ret=''
+    local params={}
+    string.gsub(desc, '@(%w+) ([^%s]*)', function(k,v)
+        if k =='param' then
+            table.insert(params, v)
+        elseif k == 'return' then
+            ret = v
+        end
+    end)
+
+    if #params > 0  or string.len(ret) > 0 then
+        e.value = ret..' = '..name..'('..table.concat(params, ', ')..')'
+    end
+    helptxt.value = desc
+end
+      </script>
+   </head>
+   <body>
+      <p>函数名称:<br><INPUT id="func" type="text" onChanged="onChanged(self)"></p>
+      <p>函数原型:<br><INPUT #def  type="text" ></p>
+      <p .help>
+      帮助说明:<br>
+      <widget id="helptxt" type="Scintilla" style="height:100%%;width:100%%;" prototype="LuaEditor"/>
+      </p>
+   </body>
+</html>

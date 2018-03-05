@@ -1,0 +1,32 @@
+<html>
+   <head>
+     <META http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+     <title>透明模式对比</title>
+     <style>
+       div.hbox {
+         flow:horizontal;
+         height:100%%;
+         border:1px solid silver;
+       }
+       div.hbox > div {
+         width:*;
+         height:100%%;
+       }
+     </style>
+     <script type="text/lua">
+       local controls=document:query('#controls')
+       controls:xcall('appendAnimation', 'item0')
+       controls:xcall('appendAnimation', 'LUA菜单项')
+     </script>
+   </head>
+   <body>
+     <h1>
+     左侧为OLE自动渲染,自动处理窗口事件,效率可能较高,但背景无法透明。<br>
+     右侧为手工渲染,手工传入窗口事件,背景可以透明.
+     </h1>
+     <div class="hbox">
+       <div style="behavior: flash;" movie="controls.swf" #controls/>
+       <div style="behavior: flash; -WMode: 'transparent';" movie="controls.swf" />
+     </div>
+   </body>
+</html>

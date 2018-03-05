@@ -1,0 +1,92 @@
+<html>
+	<head>
+		<title>Absolute Positioning</title>
+		<meta name="vs_targetSchema" content="http://schemas.microsoft.com/intellisense/ie5">
+		<style> 
+    
+    html
+    {
+      padding:0;
+    }
+    body 
+    { 
+      font-family: verdana, arial, sans-serif; 
+      font-size: 10pt; 
+      margin: 0; padding: 0; 
+      width: 100%; height: 100%; 
+      background-color: white; color: black; 
+    }
+    
+    /* 由于abs1的height:50%，配合overflow:auto,每次只显示一半的区块
+       所以拉动滑动条时它的左上角坐标是变化的 */
+	#abs1
+	{ 
+        position:relative; 
+		overflow:auto; 
+        width:90%; 
+        height:50%; 
+		border:1px solid silver; 
+		padding:10px;
+	}
+    /* 而abs2相对于他的左上角的绝对位置不变，所以abs2区块也会跟随着abs1移动 */
+	#abs2 
+    { 
+        position:absolute; 
+        left:20px; 
+        top:20px; 
+        width:150px; 
+        height:auto; 
+        background: yellow; 
+        border: 1px solid blue; 
+    }
+	#abs2:hover
+    { 
+        /* 按照上、右、下、左的顺序分别设置 */
+        background-color: yellow yellow yellow red; 
+    }
+  
+	#abs3 
+    { 
+        position:absolute; 
+        opacity:0.75;
+        left:50px; 
+        top:50px; 
+        width:100px; 
+        height:auto; 
+        background: gold; 
+        border: 1px solid green; 
+    }
+    /*
+       做个小总结:
+       1、absolute：不占位、relative：有占位！position为rel的层在显示时，会占用一行！其后面的abs层只会在下一行显示出来！ position为abs的层在显示时，会与后面的重叠在一起！
+
+2、默认情况下（不结合top等来定位），absolute（绝对定位）以父层来定位的
+
+如上面的id为abs的层，如果不结合top等来定位，则其显示位置会随父级posi层（posi在文档左下角，其也会在左下角）
+
+3、在结合top、bottom、right、left等属性时，absolute（绝对定位）以窗口做为定位，relative以自身的占位为基线做偏移！
+
+4、在结合top、bottom、right、left等属性时，如果想absolute（绝对定位）能以父层做为定位基线的话，则在父层应用absolute或relativ属性就可以!
+*/
+		</style>
+	</head>
+	<body>
+		<div id="abs1">
+            由于abs1的height:50%，配合overflow:auto,每次只显示一半的区块<br>
+            所以拉动滑动条时它的左上角坐标是变化的
+			<p>abracadabra abracadabra abracadabra abracadabra abracadabra abracadabra</p>
+			<p>abracadabra abracadabra abracadabra abracadabra abracadabra abracadabra</p>
+			<p>abracadabra abracadabra abracadabra abracadabra abracadabra abracadabra</p>
+			<p>abracadabra abracadabra abracadabra abracadabra abracadabra abracadabra</p>
+			<p>abracadabra abracadabra abracadabra abracadabra abracadabra abracadabra</p>
+			<p>abracadabra abracadabra abracadabra abracadabra abracadabra abracadabra</p>
+			<p>abracadabra abracadabra abracadabra abracadabra abracadabra abracadabra</p>
+
+            <p id="abs2">postion:absolute left:20px top:20px<br>
+                         在相对母块左上角的绝对位置不变<br>
+				This <a href="#">block</a> shall scroll with other content of the div</p> 
+		</div>
+		<p id="abs3">postion:absolute left:50px top:50px<br>This shall stay in <a href="#">place</a></p>
+    
+	</body>
+</html>

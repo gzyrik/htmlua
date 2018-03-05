@@ -1,0 +1,47 @@
+<html>
+    <head>
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <style>
+div  { width:500px; height:*; }
+select { width:100%%; display:block; }
+progress { width:100%%; }
+        </style>
+        <script type="text/lua">
+local select = $'select'
+
+local channel = _CHANNEL(function(taskNo, msg)
+    local option = select[taskNo]
+    if msg == 'done' then
+        option:$('span').text = '成功'
+        option:$('progress'):destroy()
+    else
+        option:$('progress').value = msg
+    end
+end)
+
+local task = [[
+    local ffi=require"ffi"
+    local taskNo, channel = ...
+    ffi.cdef"void __stdcall Sleep(unsigned long ms);"
+    for i=1,100 do 
+        channel;push(taskNo, i)
+        ffi.C.Sleep(10)
+    end
+    channel:supply(taskNo, 'done')
+]]
+
+local taskNo = 0;
+$'#start-task'.attribute.onClick = function()
+    taskNo = taskNo + 1
+    select:append(string.format('<option>任务%d<progress max=100 /><span/></option>', taskNo))
+    _THREAD(task, taskNo, channel);
+end
+        </script>
+    </head>
+    <body>
+        <div>
+            <button #start-task>开启异步任务</button>
+            <select type=select/>
+        </div>
+    </body>
+</html>

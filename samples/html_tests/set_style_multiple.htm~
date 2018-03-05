@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <script type="text/lua">
+$'button'.attribute.onClick = 
+function(self)
+    $'p'.style{
+        backgroundColor='yellow',
+        fontSize='200%'
+    }
+end
+        </script>
+    </head>
+    <body>
+        <h2>这是标题: 同时设置多个样式</h2>
+        <p style="background-color:#ff0000">这是一个段落。</p>
+        <p style="background-color:#00ff00">这是一个段落。</p>
+        <p style="background-color:#0000ff">这是一个段落。</p>
+        <p>这是一个段落。</p>
+        <button>为 p 元素设置多个样式</button>
+    </body>
+</html>

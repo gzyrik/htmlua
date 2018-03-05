@@ -1,0 +1,74 @@
+<html>
+    <head>
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <title>样式</title>
+        <style>
+        #editor
+        {
+            height:100%%;
+            width:100%%;
+            padding:-8px;
+        }
+        </style>
+    </head>
+    <script type="text/lua">
+
+    local editor = document:query('#editor') -- 获取Scintilla对象
+
+    editor:styleClearAll { --设置默认样式
+        fore=0xffffff,
+        back=0x270009,
+        font="Courier New",
+        size=12,
+        bold=true,
+    }
+    editor.attribute{
+        --设置4号边注为行号
+        margin= {
+            [4]={type='number',width='___'},--字符宽度
+        },
+
+    }
+
+    editor.style.linenumber = { --设置预设的行号样式
+        fore=0xff,
+        back=0xff00,
+        font="Courier New",
+    }
+
+    editor:addText[[
+    --设置默认样式: 前景白色,背景深蓝,字体,大小,粗体
+    editor:styleClearAll{
+        fore=0xffffff,
+        back=0x270009,
+        font="Courier New",
+        size=12,
+        bold=true,
+    }
+
+    --设置预设的行号样式: 前景红色,背景绿色
+    editor.style.linenumber = {
+        fore=0xff,
+        back=0xff00,
+    }
+
+    样式可设置值有:
+    fore    前景色, 颜色型(0xBBGGRR)
+    back    前景色, 颜色型
+    font    字体名, 字符串
+    size    尺寸,   整型
+    bold    粗体,   布尔型
+    underline 下划线,布尔型
+    italic  斜体,布尔型
+    weight  粗细,整型
+    visible 可见,布尔型
+    case    大小写,常量
+    eolfilled 行尾填充,布尔型
+    hotspot 超链接感应,布尔型
+    ]]
+
+    </script>
+    <body >
+        <widget #editor type="Scintilla"/>
+    </body>
+</html>

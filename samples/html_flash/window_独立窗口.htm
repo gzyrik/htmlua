@@ -1,0 +1,15 @@
+<html>
+    <head>
+     <META http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+      <script type="text/lua">
+        local flash=document:query('#flash')
+        flash.value=flash:url('controls.swf')
+        flash:xcall('appendAnimation', 'item0')
+        flash:xcall('appendAnimation', 'LUA菜单项')
+      </script>
+    </head>
+    <body>
+        <h1>Sample of behavior flash</h1>
+        <widget #flash type="Flash" style="height:*;width:*;padding:0;"/>
+    </body>
+</html>

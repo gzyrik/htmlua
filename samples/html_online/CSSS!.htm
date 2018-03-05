@@ -1,0 +1,157 @@
+<html>
+<head>
+    <META http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>CSSS!脚本入门</title>
+</head>
+<body>
+<h1>一、概 述</h1>
+
+<p>CSSS! 是在标准CSS语法基础上扩展的一种简单脚本语言，以实现一些简单的交互行为。</p>
+
+<p>CSSS! 基于标准CSS语法，通常是以一个属性名称（该名称以惊叹号结束)标明触发的事件，以逗号分隔语句（可不是一般编程语言中使用的分号哦），而以分号结束语句块（不是大括号哦），这些非常规的规则为是了遵守CSS语法规范</p>
+
+<h1>二、入 门</h1>
+
+<p>让我们看看下面这段 CSSS! 脚本:</p>
+
+<pre><code>.item {
+
+      hover-on! :
+
+            ele = $1( input.url ) ,
+
+            ele:empty == true ?
+
+                  (self.value = "empty") #
+
+                  (self.value = "filled"),
+
+            ele:hover = true,
+
+            self::width = ele.box-content-width(),
+
+            self.$(.icon) -&gt; @(ele) ele::background-color = rgb(255,0,0)
+
+      ;
+
+} 
+</code></pre>
+
+<p>它的格式看起来就像是个扩展的 CSS 属性一样.  <br/>
+一些要注意的地方:</p>
+
+<ul>
+<li>CSSS! 语句使用逗号","作为语句结束符.</li>
+<li>CSSS! 中的字符串只能双引号标识, 不能使用单引号("string").</li>
+<li>CSSS! 中使用关键字 self 表示当前对象.</li>
+</ul>
+
+
+<h1>三、触发事件(Active CSS attributes)</h1>
+
+<p>在前面的示例中，hover-on! 是我们的脚本要处理的事件标识.
+当具有 .item 类的元素被鼠标悬停时, 会触发此事件并执行里面的代码.</p>
+
+<p>下面是完整的事件支持列表:</p>
+
+<ul>
+<li><p>hover-on!:  <br/>
+鼠标悬停在节点上触发，类似aardio中的  wbLayout.onMouseEnter 事件</p></li>
+<li><p>hover-off!:<br/>
+鼠标离开节点时触发，类似aardio中的   wbLayout. onMouseLeave 事件</p></li>
+<li><p>active-on!: <br/>
+鼠标按下时触发，类似aardio中的   wbLayout.onMouseDown 事件</p></li>
+<li><p>active-off!:<br/>
+鼠标抬起时触发, 类似aardio中的 wbLayout.onMouseUp 事件</p></li>
+<li><p>focus-on!:  <br/>
+获得输入焦点时触发,</p></li>
+<li><p>focus-off!: <br/>
+失去输入焦点时触发,</p></li>
+<li><p>key-on!,key-off!:   <br/>
+键盘的按键按下/抬起时触发，通过 key-code() 函数获取按键信息. key-code() 获得的按键信息可能是一个用单引号包含的有效字符('a', '4', '$')或是下列预定义值之一:<br/>
+'RETURN', 'LEFT', 'RIGHT', 'UP', 'DOWN', 'PRIOR', 'NEXT', 'TAB', 'HOME', 'END', 'DELETE', 'INSERT', 'BACK'</p></li>
+<li><p>click!,double-click!:   <br/>
+鼠标单击，或双击时触发，必须绑定了所有允许接收单击，或双击事件的behavior，储如 button , hyperlink 等等。其他节点一般不会触发这两个事件（这些节点也可通过在CSS中指定 behavior:clickable; 启用该事件）</p></li>
+<li><p>animation-start!,animation-step!,animation-end!: <br/>
+动画控制事件animation-start! 在调用了元素的 element.start-animation() 方法后触发.animation-step! 事件处理的最后必须返回一个整数(下次执行的间隔毫秒数). 例如: return 500;</p></li>
+<li><p>timer!: <br/>
+定时触发器，配合 start-timer(ms) 和 stop-timer() 函数使用.start-timer(ms) 中的参数单位为毫秒.</p></li>
+<li><p>size-changed!:      <br/>
+元素大小发生改变时触发</p></li>
+<li><p>value-changed!: <br/>
+input 类控件的值发生变时时触发</p></li>
+<li><p>assigned!:  <br/>
+this event is fired when the element gets this style.
+In other word when value of the assigned! attribute changes.  <br/>
+这个属性很有意思，就是在你在CSS给assigned!:这个属性赋值时触发，
+换句话说，其实就是你写在这后面的脚本作为CSS属性被应用到节点时触发，而不是等待用户的什么交互。这个事件的作用类似于在behavior 里的 onAttach:</p></li>
+</ul>
+
+
+<pre><code>        onAttach = function( ltEle ){
+            return true 
+        }
+</code></pre>
+
+<p>我们下面看一个简单的aardio范例
+假设有一个节点内容是这样：</p>
+
+<pre><code>&lt;label for="id"&gt; 
+</code></pre>
+
+<p>那么我们可能如下编写CSS，下面的CSS选择器 [for] 匹配所有指定了for属性的节点，在CSS选择器中，中括号指定HTML属性</p>
+
+<pre><code>[for] { 
+  hover-on!  : $1(#&lt; self.for &gt;):hover = true; 
+  hover-off! : $1(#&lt; self.for &gt;):hover = false; 
+  active-on! : $1(#&lt; self.for &gt;):focus = true; 
+  cursor:pointer; 
+} 
+input:hover { 
+  outline: 4px glow blue 1px; 
+} 
+</code></pre>
+
+<p>鼠标悬停或离开节点导致节点for属性绑定的节点同步改变 :hover状态，而点击lable节点，
+for属性绑定的节点将获得输入焦点，下面我们看一下aardio实现的完整范例：</p>
+
+<pre><code>
+import win.ui;
+/*DSG{{*/
+var winform = ..win.form( bottom=399;parent=...;text="aardio Form";right=599 )
+ winform.add(  )
+/*}}*/
+
+import web.layout;
+ wbLayout = web.layout(winform)
+
+ wbLayout.html = /**
+ &lt;input type="text" /&gt;
+
+ &lt;input type="text" id="myText" value="" /&gt;
+ &lt;label for="myText" &gt;鼠标放到这里，并点击这里&lt;/lable&gt; 
+ **/
+
+
+ wbLayout.css = /**
+ [for]
+    {
+      hover-on!: $1(#&lt; self.for &gt;):hover = true;
+      hover-off!: $1(#&lt; self.for &gt;):hover = false;
+      active-on!: $1(#&lt; self.for &gt;):focus = true ;
+      cursor:pointer;
+    }
+    input:hover {
+      outline: 4px glow blue 1px;
+    }  
+ **/
+
+ winform.show() 
+ win.loopMessage();
+</code></pre>
+
+<p>参考以下文档整理：   <br/>
+http://www.terrainformatica.com/htmlayout/csss!.whtm<br/>
+http://www.terrainformatica.com/htmlayout/csss!-dom-object.whtm</p>
+</body>
+</html>

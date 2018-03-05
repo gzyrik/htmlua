@@ -1,0 +1,27 @@
+<html>
+  <head>
+    <META http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>自定义字体@font-face语法</title>
+    <style>
+    
+      /*而由于这种字体没有在系统里注册，所以不能直接调用，需要按照@font-face{...}的形式给予声明
+        如果是系统里已经有的字体，如“宋体”、“楷体”等就可以不声明，直接使用*/
+      @font-face 
+      {
+        font-family: NinjaLine;
+        src: url(NinjaLine.ttf);
+      }
+      
+      p#test
+      {
+        /* 设置段落<p></p>之内的文字以NinjaLine字体显示 */
+        font: 18pt NinjaLine;
+      }
+    
+    </style>
+    <script type="text/tiscript"></script>
+  </head>
+<body>
+  <p #test>Quick Brown Cristopher Jumps Over Lazy Robinson Miles</p>
+</body>
+</html>

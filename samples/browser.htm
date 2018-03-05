@@ -1,0 +1,236 @@
+<html>
+	<head>
+		<META http-equiv="Content-Type" content="text/html; charset=GBK"/>
+		<title>简单多页面浏览器</title>
+        <link rel="icon" type="image/x-icon" href="images/main.ico" />
+        <link rel="stylesheet" type="text/css" href="ctrl/tabstrip/tabstrip.css" />
+		<style> 
+        //也可以使用如下方式 @import "ctrl/tabstrip/tabstrip.css";
+		body 
+		{ 
+		  font-family: verdana, arial, sans-serif; 
+		  font-size: 9pt; 
+		  margin: 0; padding: 0; 
+		  width: 100%; height: 100%; 
+		  background-color: white; color: black; 
+
+		  flow:  "toolbar"
+		         "addr"
+		         "tabs" 
+		         "page";
+		}
+
+		div.addr
+		{
+			float: "addr";
+		}
+		widget[type="Web"]
+		{
+            width:100%%;
+			height: 100%%;
+			margin: -1px 2 2 2;
+			-prototype: WebBrowser;//定义该方法集合
+
+		}
+        widget.tab-strip
+		{
+		  float: "tabs";
+		  style-set:"tab-strip";
+		}
+		div.content
+		{
+			float: "page";
+			width: 100%%;
+			height: 100%%;
+		}
+
+		//toolbar css
+		 hr.gripper 
+		{ 
+		  //behavior: gripper; 
+		  width:3px; 
+		  height:*;
+		  background-image: url(theme:rebar-v-gripper);
+		  //background-image: url(theme:toolbar-v-splitter);
+		  background-repeat:stretch;
+		  paddding:0;
+		  margin:2px;
+		  border:none;		
+		}
+		div.rebar  
+		{
+		  float: "toolbar";
+		  flow:h-flow;
+		  
+		  background-image: url(theme:rebar-band);
+		  background-repeat:stretch;
+		  //border-top:1px solid threeddarkshadow;
+		  //border-left:1px solid threeddarkshadow;
+		  //border-right:1px solid threedhighlight;
+		  //border-bottom:1px solid threedhighlight;
+		  font-size: 9pt;
+
+		}
+		div.toolbar  
+		{
+		  flow:horizontal;
+		  //border-top:1px solid threedhighlight;
+		  //border-left:1px solid threedhighlight;
+		  //border-right:1px solid threeddarkshadow;
+		  //border-bottom:1px solid threeddarkshadow;
+		  width:max-intrinsic;		  
+		  accept-drop:selector( div.button );
+		  drop:insert;
+		}
+        div.toolbar img { //设置工具栏的图标尺寸
+            width:32;
+            height:32;
+        }
+
+		div.toolbar > .button
+		{
+		  behavior:clickable;
+		  draggable: only-move;
+		  margin:2px;
+		  padding: 4px;
+		  min-width:48px;
+		  min-height:48px;
+		  height:*;
+		  text-align:center;
+		  vertical-align:middle;
+		  background-color: transparent;
+		  background-repeat:stretch;
+		} 
+		div.toolbar > .button:hover
+		{
+		  //background-image2: url(theme:toolbar-button-hover);
+		  background-image: url(theme:list-view-item-hover);
+		  padding: 3px 5px 5px 3px;
+		}
+		div.toolbar > .button:active
+		{
+		  //background-image2: url(theme:toolbar-button-pressed);
+		  background-image: url(theme:list-view-item-selected);
+		  padding: 5px 3px 3px 5px;
+		}
+		div.toolbar > .button:checked
+		{
+		  //background-image2: url(theme:toolbar-button-pressed);
+		  background-image: url(theme:list-view-item-selected);
+		}
+		#url
+		{
+			width: 100%%;
+		}
+		
+	</style>
+	<script type="text/lua" src="ctrl/tabstrip/tabstrip.lua"/>	
+	<script type="text/lua">
+        current = nil;--当前页面
+        local editframe = document:query("#editframe")
+        local ftab = document:query("#ftab")
+
+-------------------------------------------------------------------------------
+--IE浏览器
+		WebBrowser = {}
+        --处理浏览器的通知
+        function WebBrowser:HandleNotify(code, ...)
+            code = string.upper(code)
+            --新窗口浏览通知(new_url, prev_url)
+            if code == 'NEWWINDOW3' then
+                go(select(1,...))
+                return false --阻止IE的默认处理
+            -- 网页的标题(title)
+            elseif code == 'TITLECHANGE' then
+                ftab:changeLable(select(1,...))
+                return nil --必须有返回值,保持继续处理
+            end
+        end
+-------------------------------------------------------------------------------
+		function go(url)
+			addNewUrl(url);
+		end
+
+		editframe.filelist = {};
+		function addNewUrl(url)
+
+			--新建编辑框
+			if editframe.filelist[url] then		
+				ftab:setCurrent(url);
+				return;	
+			end
+
+            --加载页面
+			editframe:append('<widget type="Web" style="height:100%%;width:100%%;"/>');
+			local ntab = editframe[-1];
+			ntab.value = url
+
+			editframe.filelist = editframe.filelist or {};
+			editframe.filelist[url] = ntab;
+			
+			ftab:addTab(url, url, "url(http://"..url .. "/favicon.ico)")
+
+			editframe:update();
+			return ntab;
+		end
+
+		--切换文件
+        function ftab:onTabSwitch(new, old)	
+			local fn = new.attribute.value2;
+
+            --更新地址栏
+			document:query("#url").value = fn
+        	document:query("#icon").attribute.src = "http://"..fn .. "/favicon.ico"
+
+			local newtab = editframe.filelist[fn];
+			if newtab == nil or newtab == current then
+				return;
+			end
+
+			if current then
+				current.style.display = 'none';
+			end
+			
+            newtab.style.display = 'block';
+
+			current = newtab;
+
+			editframe:update()	
+			
+			current:state('+focus')
+		end
+
+		--关闭文件
+		function ftab:onTabDelete(tab) 
+			editframe.filelist[tab.attribute['value2']] = nil;
+			current:destroy();
+			current = nil;
+		end
+	</script>
+	</head>
+	<body>
+	<!-- 工具栏 -->
+	<div .rebar>
+		 <div .toolbar #no1 title="工具栏按钮可拖动">		  
+		  <div .button onClick="go('www.bing.com')"><img src="http://www.bing.com/favicon.ico"/><br>必应</div>
+		  <div .button onClick="go('www.baidu.com')"><img src="http://www.baidu.com/favicon.ico"/><br>百度</div>
+		  <div .button onClick="go('www.tianya.cn')"><img src="http://www.tianya.cn/favicon.ico"/><br>天涯</div>
+		  <hr .gripper />
+		  <div .button onClick="current:xcall('back')"><img src="images/back_alt.png"/><br>后退</div>
+		  <div .button onClick="current:xcall('forward')"><img src="images/forward_alt.png"/><br>前进</div>
+		  <div .button onClick="current:xcall('refresh')"><img src="images/refresh.png"/><br>刷新</div>
+		</div>
+	</div>
+	<!-- 地址栏 -->
+	<div .addr>
+        地址:<img #icon align="middle"/> <input #url type="text" value="www.cppblog.com"/>
+        <input type="button" value="Go" onClick="go(document:query('#url').value)"/>
+	</div>
+	
+	<!-- 标签页 -->
+	<widget #ftab .tab-strip />
+	<!-- 浏览器 -->
+	<div .content #editframe/>
+	</body>
+</html>
+3

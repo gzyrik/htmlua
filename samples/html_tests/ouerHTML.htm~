@@ -1,0 +1,21 @@
+<html>
+    <head>
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <script type="text/lua">
+
+$'button'.attribute.onClick = function()
+    $('p',{}).outerHTML = "<button>This is button</button>";
+end
+
+        </script>
+    </head>
+    <body>
+        <p>This is a paragraph.</p>
+        <p>This is another paragraph.</p>
+        <button>请点击这里</button><br/>
+        <pre>
+            $(selector).outerHTML = content	改变被选元素的HTML,包括类型
+        </pre>
+    </body>
+
+</html>

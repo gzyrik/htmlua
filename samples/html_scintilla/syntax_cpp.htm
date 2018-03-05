@@ -1,0 +1,217 @@
+<html>
+    <head>
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <title>语法高亮</title>
+        <style>
+        #editor
+        {
+            height:100%%;
+            width:100%%;
+            padding:-8px;
+        }
+        </style>
+    </head>
+    <script type="text/lua">
+
+    local editor = document:query('#editor') -- 获取Scintilla对象
+
+    --定义词法分析器的C++语法
+    editor.lexer.cpp={
+        keyword={
+            [[asm auto break case catch class const
+            const_cast continue default delete do double
+            dynamic_cast else enum explicit extern false for 
+            friend goto if inline mutable
+            namespace new operator private protected public
+            register reinterpret_cast return signed
+            sizeof static static_cast struct switch template
+            this throw true try typedef typeid typename
+            union unsigned using virtual volatile while
+            html body head meta script title window document]],
+
+            [[bool char float int long short void wchar_t
+            b body content head href html link meta 
+            name rel script strong title type xmlns]],
+        },
+        style={
+            word ={fore=0xFF0000},
+            word2 ={fore=0x800080, bold=true, hotspot=true},
+            string={fore=0x1515A3},
+            character={fore=0x1515A3},
+            preprocessor={fore=0x808080},
+            comment={fore=0xff00,bold=true},
+            commentline={fore=0xff00},
+            commentdoc={fore=0xff00},
+        }
+    }
+
+    --设置语法
+    editor.attribute{
+        language='cpp',
+    }
+
+    editor:addText[[
+
+#include <stdio.h>
+/*
+** maximum number of captures that a pattern can do during
+** pattern-matching. This limit is arbitrary, but must fit in
+** an unsigned char.
+*/
+#if !defined(LUA_MAXCAPTURES)
+#define LUA_MAXCAPTURES		32
+#endif
+
+
+/* macro to 'unsign' a character */
+#define uchar(c)	((unsigned char)(c))
+
+
+/*
+** Some sizes are better limited to fit in 'int', but must also fit in
+** 'size_t'. (We assume that 'lua_Integer' cannot be smaller than 'int'.)
+*/
+#define MAX_SIZET	((size_t)(~(size_t)0))
+
+#define MAXSIZE  \
+	(sizeof(size_t) < sizeof(int) ? MAX_SIZET : (size_t)(INT_MAX))
+ static const char *match (MatchState *ms, const char *s, const char *p) {
+  if (ms->matchdepth-- == 0)
+    luaL_error(ms->L, "pattern too complex");
+  init: /* using goto's to optimize tail recursion */
+  if (p != ms->p_end) {  /* end of pattern? */
+    switch (*p) {
+      case '(': {  /* start capture */
+        if (*(p + 1) == ')')  /* position capture? */
+          s = start_capture(ms, s, p + 2, CAP_POSITION);
+        else
+          s = start_capture(ms, s, p + 1, CAP_UNFINISHED);
+        break;
+      }
+      case ')': {  /* end capture */
+        s = end_capture(ms, s, p + 1);
+        break;
+      }
+      case '$': {
+        if ((p + 1) != ms->p_end)  /* is the '$' the last char in pattern? */
+          goto dflt;  /* no; go to default */
+        s = (s == ms->src_end) ? s : NULL;  /* check end of string */
+        break;
+      }
+      case L_ESC: {  /* escaped sequences not in the format class[*+?-]? */
+        switch (*(p + 1)) {
+          case 'b': {  /* balanced string? */
+            s = matchbalance(ms, s, p + 2);
+            if (s != NULL) {
+              p += 4; goto init;  /* return match(ms, s, p + 4); */
+            }  /* else fail (s == NULL) */
+            break;
+          }
+          case 'f': {  /* frontier? */
+            const char *ep; char previous;
+            p += 2;
+            if (*p != '[')
+              luaL_error(ms->L, "missing '[' after '%%f' in pattern");
+            ep = classend(ms, p);  /* points to what is next */
+            previous = (s == ms->src_init) ? '\0' : *(s - 1);
+            if (!matchbracketclass(uchar(previous), p, ep - 1) &&
+               matchbracketclass(uchar(*s), p, ep - 1)) {
+              p = ep; goto init;  /* return match(ms, s, ep); */
+            }
+            s = NULL;  /* match failed */
+            break;
+          }
+          case '0': case '1': case '2': case '3':
+          case '4': case '5': case '6': case '7':
+          case '8': case '9': {  /* capture results (%0-%9)? */
+            s = match_capture(ms, s, uchar(*(p + 1)));
+            if (s != NULL) {
+              p += 2; goto init;  /* return match(ms, s, p + 2) */
+            }
+            break;
+          }
+          default: goto dflt;
+        }
+        break;
+      }
+      default: dflt: {  /* pattern class plus optional suffix */
+        const char *ep = classend(ms, p);  /* points to optional suffix */
+        /* does not match at least once? */
+        if (!singlematch(ms, s, p, ep)) {
+          if (*ep == '*' || *ep == '?' || *ep == '-') {  /* accept empty? */
+            p = ep + 1; goto init;  /* return match(ms, s, ep + 1); */
+          }
+          else  /* '+' or no suffix */
+            s = NULL;  /* fail */
+        }
+        else {  /* matched once */
+          switch (*ep) {  /* handle optional suffix */
+            case '?': {  /* optional */
+              const char *res;
+              if ((res = match(ms, s + 1, ep + 1)) != NULL)
+                s = res;
+              else {
+                p = ep + 1; goto init;  /* else return match(ms, s, ep + 1); */
+              }
+              break;
+            }
+            case '+':  /* 1 or more repetitions */
+              s++;  /* 1 match already done */
+              /* FALLTHROUGH */
+            case '*':  /* 0 or more repetitions */
+              s = max_expand(ms, s, p, ep);
+              break;
+            case '-':  /* 0 or more repetitions (minimum) */
+              s = min_expand(ms, s, p, ep);
+              break;
+            default:  /* no suffix */
+              s++; p = ep; goto init;  /* return match(ms, s + 1, ep); */
+          }
+        }
+        break;
+      }
+    }
+  }
+  ms->matchdepth++;
+  return s;
+}
+/*
+    定义语法格式如下:
+    --定义词法分析器的C++语法
+    editor.lexer.cpp={
+        keyword={
+            "asm auto break case catch class const",
+            bool char float int long short void wchar_t",
+        },
+        style={
+            word ={fore=0xFF0000},
+            word2 ={fore=0x800080, bold=true},
+            string={fore=0x1515A3},
+            character={fore=0x1515A3},
+            preprocessor={fore=0x808080},
+            comment={fore=0xff00,back=0x270009},
+            commentline={fore=0xff00},
+            commentdoc={fore=0xff00},
+        }
+    }
+    keyword为关键字组,可定义多组,每组内的关键词用空格分割.
+    style 为高亮的样式,可用的预设样式由相应的语言决定,
+    具体参考 SciLexer.h
+
+    例如:
+    cpp 预设样式: 
+        default comment commentline commentdoc number word string
+        character uuid preprocessor operator identifier stringeol
+        verbatim regex commentlinedoc word2 commentdockeyword
+        commentdockeyworderror globalclass stringraw tripleverbatim
+        hashquotedstring
+
+    editor.attribute.language = 'cpp' 启用语法
+*/
+    ]]
+
+    </script>
+    <body >
+        <widget #editor type="Scintilla"/>
+    </body>
+</html>

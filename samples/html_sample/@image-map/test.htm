@@ -1,0 +1,52 @@
+<html>
+  <head>
+    <title></title>
+    <style>
+      @image-map tb-icon 
+      {
+        src:url(rttb.png);
+        cells:15 2; /* 15 columns, 2 rows */
+        /* logical names of the parts, see toolbar-icons.png */ 
+        items:  ulist,
+                olist,
+                unindent,
+                indent,
+                picture,
+                table,
+                link,
+                align-left,
+                align-center,
+                align-right,
+                align-justify,
+                align,
+                fullscreen,
+                unfullscreen,
+                props,
+                
+                bold,
+                italic,
+                underline,
+                strikethrough,
+                font-family,
+                font-size,
+                text-color,
+                text-back-color,
+                source;
+      }
+    
+      
+      div { 
+        size:100px; 
+        border:1px solid black;
+        foreground: no-repeat image-map(tb-icon,bold); 
+      }
+      div:hover {
+        foreground-image-transformation: colorize(#70F);
+      }  
+    
+    </style>
+  </head>
+<body>
+  <div></div>
+</body>
+</html>

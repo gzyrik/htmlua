@@ -1,0 +1,58 @@
+<html>
+    <head>
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <title>边注,标记,行标记集</title>
+        <style>
+        #editor
+        {
+            height:100%%;
+            width:100%%;
+            padding:-8px;
+        }
+        </style>
+    </head>
+    <script type="text/lua">
+
+    local editor = document:query('#editor') -- 获取Scintilla对象
+    editor.attribute{
+        --0号边注: 标志,宽度为9,显示0号标记  (0x00000001)
+        --1号边注: 标志,宽度为9,显示1,2号标记(0x00000003)
+        --2号边注: 行号,宽度为20
+        margin= {
+            [0]={type='symbol',width=9,mask=0x1},
+            [1]={type='symbol',width=9,mask=0x6},
+            [2]={type='number',width=20},
+        },
+
+        --0号位标志: 小圆,红色
+        --1号位标志: 箭头,绿色
+        --2号位标志: 加号,蓝色
+        marker = {
+            [0]={define='circle',fore=0xff}, --颜色格式0xBBGGRR
+            [1]={define='shortarrow',fore=0xff00},
+            [2]={define='plus',fore=0xff0000},
+        },
+    }
+
+    editor:addText('标志设置: 0位代表小圆, 1位代表箭头, 2代表加号; 内部行号参数从0开始\n')
+    --分别加入0~2号标记
+    for i=1,9 do 
+        local markerNumber = i%3
+        local str = string.format('editor:markerAdd(%d, %d)    --添加标志位号: %d\n', i, markerNumber, markerNumber)
+        editor:addText(str)
+        editor:markerAdd(i, markerNumber)
+    end
+
+    --第10行加入0,1号标记
+    editor:addText('editor:markerAdd(10, 0);markerAdd(10, 1)   --多次添加行标志位:0x3\n')
+    editor:markerAdd(10, 0)
+    editor:markerAdd(10, 1)
+    --第11行加入0,2号标记
+    editor:addText('editor:markerAddMask(11, 3)              --单次添加行标志位:0x3\n')
+    editor:markerAddMask(11, 3)
+
+    </script>
+    <body >
+        <widget #editor type="Scintilla"/>
+    </body>
+</html>

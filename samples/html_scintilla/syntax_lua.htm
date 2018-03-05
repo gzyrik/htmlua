@@ -1,0 +1,91 @@
+<html>
+    <head>
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <title>Lua语法高亮</title>
+        <style>
+        #editor
+        {
+            height:100%%;
+            width:100%%;
+            padding:-8px;
+        }
+        </style>
+    </head>
+    <script type="text/lua">
+
+    local editor = document:query('#editor') -- 获取Scintilla对象
+
+    --定义词法分析器的Lua语法
+    editor.lexer.lua={
+        keyword = {
+            "and break do else elseif false for local if in nil not or repeat return then true until while self",
+            "table.insert table.remove string.sub table.concat function require end",
+        },
+        style = {
+            default={fore=0x0},
+            word={fore=0xFFFF, bold=true},
+            number={fore=0xFF},
+            string={fore=0xFF00FF},
+            character={fore=0xFF00FF},
+            literalstring={fore=0xFF00FF},
+            stringeol={fore=0xFF00FF},
+            comment={fore=0x008000},
+            commentline={fore=0x008000},
+            word2={fore=0xF7FF00},
+            operator= {fore=0x7FFF00},
+        },
+    }
+
+    --设置语法
+    editor.attribute{
+        language='lua',
+    }
+
+    editor:addText([[
+    local function test()
+        print("hello world")
+    end
+    test()
+
+]]..'--[['..[[
+
+    定义语法格式如下:
+    --定义词法分析器的Lua语法
+    editor.lexer.lua={
+        keyword = {
+            "and break do else elseif false for local if in nil not or repeat return then true until while self",
+            "table.insert table.remove string.sub table.concat function require end",
+        },
+        style = {
+            default={fore=0x0},
+            word={fore=0xFFFF, bold=true},
+            number={fore=0xFF},
+            string={fore=0xFF00FF},
+            character={fore=0xFF00FF},
+            literalstring={fore=0xFF00FF},
+            stringeol={fore=0xFF00FF},
+            comment={fore=0x008000},
+            commentline={fore=0x008000},
+            word2={fore=0xF7FF00},
+            operator= {fore=0x7FFF00},
+        },
+    }
+    keyword 为关键字组,可定义多组,每组内的关键词用空格分割.
+    style 为高亮的样式,可用的预设样式由相应的语言决定,
+    具体参考 SciLexer.h
+
+    例如:
+
+    lua 预设样式: 
+        default comment commentline commentdoc number word string character
+        literalstring preprocessor operator identifier stringeol word2 word3
+        word4 word5 word6 word7 word8 label
+
+    editor.attribute.language = 'lua' 启用语法
+]] ..']]')
+
+    </script>
+    <body >
+        <widget #editor type="Scintilla"/>
+    </body>
+</html>

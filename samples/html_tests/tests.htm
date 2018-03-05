@@ -1,0 +1,31 @@
+<html>
+<head>
+    <META http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <style>
+p   {behavior:clickable}
+h3  {behavior:clickable}
+    </style>
+    <script type="text/lua">
+local e = E('p', E'button') -- 合并多次筛选
+e.innerHTML='点击后隐藏'
+
+e.attribute.onClick =
+function(self)
+    self.style.visibility='hidden'
+    self.style.backgroundColor='cornsilk'
+    E'h3'.style.visibility= 'visible'
+end
+--
+E('p,button').style.fontSize='200%'
+E'h3'.text = '恢复隐藏元素'
+E'h3'.style.visibility = 'hidden'
+    </script>
+</head>
+
+<body>
+    <button/>
+    <p/><p/>
+    <h3 onClick="E('*',{}).style.visibility='visible'"></h3>
+</body>
+
+</html> 

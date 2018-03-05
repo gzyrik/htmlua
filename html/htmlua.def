@@ -1,0 +1,3 @@
+LIBRARY htmlua
+EXPORTS
+luaopen_htm_core

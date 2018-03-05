@@ -1,0 +1,41 @@
+<html>
+  <head>
+    <META http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>自适应DPI和图像映射@image-map语法</title>
+    <title></title>
+    <style>
+    /* 声明了自适应图像,当电脑DPI小于设定的100dpi时，就会调用第一张图片，否则就是第二张 */
+    @image-map dpi-aware {
+      src: url(star-1x.png) 100dpi,
+           url(star-2x.png) ;
+    }
+    
+    /* 调用image-map(dpi-aware)，将它设置为背景图片
+       会根据电脑屏幕的DPI（每英寸点数,
+       win7可以通过注册表 HKEY_CURRENT_USER\Control Panel\Desktop\WindowMetric\AppliedDPI查看）
+       当电脑DPI小于设定的100dpi时，就会调用第一张图片，否则就是第二张了.
+       总的来说，就是根据屏幕DPI自适应显示相应的图片
+     */
+    #star {
+      size:180dip;
+      background: no-repeat 50% 50%;
+      background-image: image-map(dpi-aware); /* either star-1x.png or star-2x.png */   
+      border:1px solid;  
+    }
+
+    /* 始终显示star-1x.png,作为对比 */
+    #star-no {
+      size:180dip;
+      background: no-repeat 50% 50%;      
+      background-image: url(star-1x.png);    
+      border:1px solid;  
+    }
+    
+    </style>
+  </head>
+<body>
+  <p>Demo of @image-map usage. Single logical image name <code>image-map(dpi-aware)</code> is used to define multiple source images selected according to screen DPI.</p>
+  <div #star />
+  <div #star-no />
+</body>
+</html>
