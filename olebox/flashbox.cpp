@@ -1,5 +1,6 @@
 #include "olebox.h"
 #include <sstream>
+#include <vector>
 #import "flash.ocx" named_guids
 #pragma warning (default : 4192)
 namespace {
@@ -194,11 +195,11 @@ public:
             break;
         case 0x96://FSCommand
             if((pDispParams->cArgs == 2) && (pDispParams->rgvarg[0].vt == VT_BSTR) && (pDispParams->rgvarg[1].vt == VT_BSTR))
-                FSCommand(pDispParams->rgvarg[1].bstrVal, pDispParams->rgvarg[0].bstrVal);
+                FSCommand(pDispParams->rgvarg[1].bstrVal, pDispParams->rgvarg[0].bstrVal, pVarResult);
             break;
         case 0xC5://FlashCall
             if((pDispParams->cArgs == 1) && (pDispParams->rgvarg[0].vt == VT_BSTR))
-                FlashCall(pDispParams->rgvarg[0].bstrVal);
+                FlashCall(pDispParams->rgvarg[0].bstrVal, pVarResult);
             break;
         case DISPID_READYSTATECHANGE:					
             break;
@@ -210,10 +211,65 @@ public:
     }
     HRESULT OnReadyStateChange (long newState) {	return S_OK; }
     HRESULT OnProgress(long percentDone ) { return S_OK;}
-    HRESULT FSCommand (_bstr_t command, _bstr_t args){ //TODO
+    _variant_t deserializeValue(const std::wstring& valueStr)
+    {
+        _variant_t ret;
+        if(valueStr == L"<true/>") ret = true;
+        else if(valueStr == L"<false/>") ret = false;
+        else if(valueStr.substr(0, 8) == L"<string>"){
+            ret = valueStr.substr(8, valueStr.find(L"</string>", 8) - 8).c_str();
+        }
+        else if(valueStr.substr(0, 8) == L"<number>"){
+            std::wistringstream iss(valueStr.substr(8, valueStr.find(L"</number>", 8) - 8));
+            double v;
+            iss>>v;
+            ret = v;
+        }
+        return ret;
+    }
+    bool deserializeInvocation(const std::wstring& xmlString, std::wstring& funcName, std::vector<_variant_t>& args)
+    {
+        size_t indexA = 0;
+        size_t indexB = 0;
+        if((indexA = xmlString.find(L"<invoke name=\"")) == xmlString.npos)
+            return false;
+        if((indexB = xmlString.find('\"', indexA + 14)) == xmlString.npos)
+            return false;
+        funcName = xmlString.substr(indexA + 14, indexB - (indexA + 14));
+        args.clear(); 
+        if((indexA = xmlString.find(L"<arguments>", indexB)) == xmlString.npos)
+            return true;
+        indexA += 11;
+        std::wstring argString(xmlString.substr(indexA, xmlString.find(L"</arguments>", indexA) - indexA));
+        for(indexA = 0, indexB = 0; true;)
+        {
+            if((indexA = argString.find('<', indexB)) == xmlString.npos)
+                break;
+            if((indexB = argString.find('>', indexA)) == xmlString.npos)
+                break;
+            if(argString[indexB-1] != '/')
+            {
+                if((indexB = argString.find('>', indexB + 1)) == xmlString.npos)
+                    break;
+            }
+            args.push_back(deserializeValue(argString.substr(indexA, indexB + 1 - indexA)));
+        }
+        return true;
+    }
+    HRESULT FSCommand (const _bstr_t& command, const _bstr_t& args, VARIANT* retval){ //TODO
         return S_OK;
     }	
-    HRESULT FlashCall (_bstr_t request) {//TODO
+    HRESULT FlashCall (const _bstr_t& request, VARIANT* result) {
+        std::wstring funcName;
+        _variant_t argval, retval;
+        {
+            std::vector<_variant_t> args;
+            deserializeInvocation((const wchar_t*)request,funcName, args);
+            if (args.size() == 1) argval = args[0];
+        }
+        if (!m_lisnter.Callback(funcName.c_str(), &argval, retval))
+            return S_FALSE;
+        if (result) *result = retval.Detach();
         return S_OK;
     }
 public:

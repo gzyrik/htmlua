@@ -226,9 +226,10 @@ namespace utf8
 { 
   // convert utf8 code unit sequence to wchar_t sequence
 
-  inline bool towcs(const byte *utf8, size_t length, pod::wchar_buffer& outbuf)
+  inline bool towcs(const byte *utf8, size_t length, pod::wchar_buffer& outbuf, bool can_all_ansi=true, unsigned int max_errors=0)
   {
-    if(!utf8 || length == 0) return true;
+    bool not_ansi = false;
+    if(!utf8 || length == 0) return not_ansi || can_all_ansi;
     const byte* pc = (const byte*)utf8;
     const byte* last = pc + length;
     unsigned int b;
@@ -247,14 +248,23 @@ namespace utf8
       else if ((b & 0xe0) == 0xc0) 
       {
         // 2-byte sequence: 00000yyyyyxxxxxx = 110yyyyy 10xxxxxx
-        if(pc == last) { outbuf.push('?'); ++num_errors; break; }
+        if(pc == last) {
+          outbuf.push('?'); 
+          if (++num_errors == max_errors) return false;
+          break;
+        }
         b = (b & 0x1f) << 6;
         b |= (*pc++ & 0x3f);
+        not_ansi = true;
       } 
       else if ((b & 0xf0) == 0xe0) 
       {
         // 3-byte sequence: zzzzyyyyyyxxxxxx = 1110zzzz 10yyyyyy 10xxxxxx
-        if(pc >= last - 1) { outbuf.push('?'); ++num_errors; break; }
+        if(pc >= last - 1) { 
+           outbuf.push('?');
+           if (++num_errors == max_errors) return false;
+           break; 
+        }
         
         b = (b & 0x0f) << 12;
         b |= (*pc++ & 0x3f) << 6;
@@ -262,6 +272,7 @@ namespace utf8
         if(b == 0xFEFF &&
            outbuf.length() == 0) // bom at start
              continue; // skip it
+        not_ansi = true;
       } 
       else if ((b & 0xf8) == 0xf0) 
       {
@@ -277,7 +288,7 @@ namespace utf8
         if((b & 0x1fffff) != b)
         {
           outbuf.push('?');
-          ++num_errors;
+          if (++num_errors == max_errors) return false;
           continue;
         }
 //#pragma warning( suppress:4127 ) //  warning C4127: conditional expression is constant
@@ -295,16 +306,17 @@ namespace utf8
         {
           assert(0); // what? wchar_t is single byte here?
         }
+        not_ansi = true;
       } 
       else 
       {
         //assert(0); //bad start for UTF-8 multi-byte sequence"
-        ++num_errors;
+        if (++num_errors == max_errors) return false;
         b = '?';
       }
       outbuf.push( wchar_t(b) );
     }
-    return num_errors == 0;
+    return not_ansi || can_all_ansi;
   }
 
   // get unicode code point from sequence of UTF16 code units
@@ -530,30 +542,34 @@ namespace aux
   };
   class a2w 
   {
-    wchar_t  local[16];
+    wchar_t  local[64];
     wchar_t* buffer;
     unsigned int nu;
     void init(const char* str, unsigned int n)
       {
-      if (n==0) {
-        buffer = local;
-        nu = n;
-        buffer[nu] = 0;
-        return;
-      }
       UINT codePage;
+      if (n > 0) {
 #ifdef _WIN32_WCE
-      codePage = CP_ACP;
+          codePage = CP_ACP;
 #else
-      codePage = CP_THREAD_ACP;
+          codePage = CP_THREAD_ACP;
 #endif
-      nu = MultiByteToWideChar(codePage,0,str,n,0,0);
-      if (nu == 0){
-        codePage = CP_UTF8;
-        nu = MultiByteToWideChar(CP_UTF8,0,str,n,0,0);
+          nu = MultiByteToWideChar(codePage,0,str,n,0,0);
+          if (nu == 0){
+              codePage = CP_UTF8;
+              nu = MultiByteToWideChar(CP_UTF8,0,str,n,0,0);
+          }
       }
-      buffer = ( nu < (16-1) )? local: new wchar_t[nu+1];
-      MultiByteToWideChar(codePage,0,str,n,buffer,nu);
+      else {
+          nu = n;
+      }
+      if (nu > 0){
+          buffer = ( nu < (sizeof(local)/sizeof(wchar_t)-1) )? local: new wchar_t[nu+1];
+          MultiByteToWideChar(codePage,0,str,n,buffer,nu);
+      }
+      else {
+          buffer = local;
+      }
       buffer[nu] = 0;
       }
   public:
@@ -571,19 +587,19 @@ namespace aux
   };
   class utf2a
   {
-      w2a w;
+      w2a buffer;
       const char* a_str;
       unsigned int a_len;
   public:
-      explicit utf2a(const char* str, unsigned int n=-1):w(0){
+      explicit utf2a(const char* str, unsigned int n=-1):buffer(0){
           pod::wchar_buffer wbuf;
           a_str = str;
           a_len = n;
           if (n == -1) a_len = strlen(str);
-          if (utf8::towcs((const byte*)a_str, a_len,wbuf)){
-              w.init(wbuf.data(), wbuf.length());
-              a_str = w;
-              a_len = w.length();
+          if (utf8::towcs((const byte*)a_str, a_len, wbuf, false, 1)){
+              buffer.init(wbuf.data(), wbuf.length());
+              a_str = buffer;
+              a_len = buffer.length();
           }
       }
       operator const char*() { return (const char*)a_str; }
@@ -601,7 +617,7 @@ namespace aux
           utf_str = (const byte*)str;
           utf_len = n;
           if (n == -1) utf_len = strlen(str);
-          if (!utf8::towcs(utf_str, utf_len ,wbuf)){
+          if (!utf8::towcs(utf_str, utf_len, wbuf, true, 1)){
             aux::a2w w(str, utf_len);
             utf8::fromwcs(w, w.length(), ubuf);
             utf_str = ubuf.data();

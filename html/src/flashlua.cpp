@@ -8,7 +8,7 @@ struct LuaFlash : public HTMLuaWnd, public OleBox::Stub
         else
             ::InvalidateRect(m_hWnd, pRect, fErase);
     }
-    virtual bool Callback(const wchar_t func[], const _variant_t* argv, _variant_t& retva){ return false; }
+    virtual bool Callback(const wchar_t func[], const _variant_t* argv, _variant_t& retval){ return false; }
 
     OleBox* m_flash;
     LuaFlash():m_flash(0){}

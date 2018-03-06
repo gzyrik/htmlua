@@ -232,11 +232,6 @@ static int UILoop(lua_State* L)
     }
     return 0;
 }
-static int ANSI(lua_State* L)
-{
-    lua_pushstring(L, aux::utf2a(luaL_checkstring(L,1)));
-    return 1;
-}
 static ThreadMap _threads;
 static unsigned __stdcall threadfunc(void * p)
 {
@@ -360,7 +355,32 @@ int luaopen_web(lua_State* L);
 int luaopen_json_decode(lua_State* L);
 bool script_call_olebox(OleBox* obox, XCALL_PARAMS& params){
     if (!obox) return false;
-    return true;
+    _variant_t argval, retval;
+    aux::a2w as(params.method_name);
+    if (params.argc > 0){
+        switch(params.argv[0].t){
+        case T_UNDEFINED: break;
+        case T_NULL: break;
+        case T_BOOL: argval = params.argv[0].get(false); break;
+        case T_INT:  argval = params.argv[0].get(0); break;
+        case T_FLOAT: argval = params.argv[0].get(0.0); break;
+        case T_STRING:  argval = params.argv[0].get(L""); break;
+        default:
+            assert(0);
+        }
+    }
+    const bool ret = obox->Invoke(as, &argval, retval);
+    switch(retval.vt){
+    case VT_NULL: break;
+    case VT_EMPTY: break;
+    case VT_BOOL: params.retval = (bool)retval; break;
+    case VT_INT: params.retval = (int)retval; break;
+    case VT_R8: params.retval = (double)retval; break;
+    case VT_BSTR: params.retval = retval.bstrVal; break;
+    default:
+        assert(0);
+    }
+    return ret;
 }
 static DWORD _tlsLibRef = TlsAlloc();
 static DWORD _tlsLuaState = TlsAlloc();
@@ -439,7 +459,6 @@ luaopen_htm_htmlua(lua_State* L)
         _(BindBehavior),
         _(UILoop),
         _(NewThread),
-        _(ANSI),
         _(PostTask),
 #undef _
         {0,0}
