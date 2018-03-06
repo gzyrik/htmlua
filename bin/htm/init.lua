@@ -601,9 +601,13 @@ Element.__property = {
         assert(v==nil, 'readonly property')
         return _element_new(_api(C, 'GetParentElement', e))
     end),
+    count = U.DOC[[只读的子元素个数]](function(e,v)
+        assert(v==nil, 'readonly property')
+        return _element_call(e, 'GetChildrenCount')
+    end),
     index = U.DOC[[只读的在父节点中序号,从1开始]](function(e,v)
         assert(v==nil, 'readonly property')
-        return _element_new(_api(C, 'GetElementIndex', e))
+        return _element_call(e, 'GetElementIndex')
     end),
     value = U.DOC[[相应的内部值]](function(e,v)
         return _element_call(e, v and 'ControlSetValue' or 'ControlGetValue', v)

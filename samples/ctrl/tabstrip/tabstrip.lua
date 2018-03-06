@@ -59,7 +59,7 @@ end
 function TabStrip:closeTab(tab)
     local tabs = self:query("widget.tabs");
     local delindex = -1;
-    for i = 1, #tabs do
+    for i = 1, tabs.count do
         if tab == tabs[i] then
             self:onTabDelete(tab);
             delindex = i;
@@ -69,8 +69,8 @@ function TabStrip:closeTab(tab)
     end
 
     tabs:update();
-    if #tabs > 0 then		
-        delindex = math.min(#tabs, delindex);
+    if tabs.count > 0 then		
+        delindex = math.min(tabs.count, delindex);
         self:switchTab(tabs[delindex]);
         self:HandleSize();	
     else
@@ -103,7 +103,7 @@ function TabStrip:HandleSize()
 
     --将tab移到下拉框中
     function moveToOffstrip(tab)
-        if #menu == 0 then
+        if menu.count == 0 then
             combo.style.display = 'block';
         end
         local h = menu:clone(tab, 1);
@@ -113,20 +113,20 @@ function TabStrip:HandleSize()
 
     --将tab从下拉表中移除
     function moveFromOffstrip(tab)
-        for i = 1, #menu do
+        for i = 1, menu.count do
             local offtab = menu[i];		
             if offtab.tab == tab then			
                 offtab:destroy();
                 break;
             end
         end
-        if #menu == 0 then			
+        if menu.count == 0 then			
             combo.style.display = 'none';
         end
     end
 
     local tabs_x,tabs_y,tabs_r,tabs_b = tabs:place()
-    for i = 1, #tabs do
+    for i = 1, tabs.count do
         local tab = tabs[i];
         local x,y,r,b = tab:place()
         if r > tabs_r and tab.style.visibility == 'visible' then
