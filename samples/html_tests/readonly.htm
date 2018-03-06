@@ -1,0 +1,26 @@
+<html>
+    <head>
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <script type="text/lua">
+
+E'button'.attribute.onClick = function()
+    E'p'.innerHTML = "The number of childern of body is " .. E'body'.count
+    .. '. The button is at  ' .. E'button'.index
+    .. '. The type of pre is ' .. E'pre'.type
+end
+
+        </script>
+    </head>
+    <body>
+        <p>This is a paragraph.</p>
+        <p>This is another paragraph.</p>
+        <button>请点击这里</button><br/>
+        <pre>
+            E(selector).type 返回元素的类型
+            E(selector).parent 返回父元素
+            E(selector).count 返回子元素的个数
+            E(selector).index 返回在父元素中的序号
+        </pre>
+    </body>
+
+</html>
